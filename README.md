@@ -47,5 +47,3 @@ python -m http.server 8080
 ```
 
 Open `http://localhost:8080`.
-
-GitHub Pages: Settings → Pages → Deploy from a branch → `main` / `/ (root)`.
