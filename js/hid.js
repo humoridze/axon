@@ -197,16 +197,71 @@ export class RazerSession {
     return asciiFromBytes(response.args) || '—';
   }
 
-  async getDpi() {
-    const response = await this.request('dpi', commands.getDpi());
+  parseDpi(args) {
     return {
-      x: joinU16(response.args[1] ?? 0, response.args[2] ?? 0),
-      y: joinU16(response.args[3] ?? 0, response.args[4] ?? 0),
+      x: joinU16(args[1] ?? 0, args[2] ?? 0),
+      y: joinU16(args[3] ?? 0, args[4] ?? 0),
     };
   }
 
+  dpiMatches(read, dpiX, dpiY) {
+    const slack = Math.max(this.profile.dpi?.step ?? 100, 50);
+    return Math.abs(read.x - dpiX) <= slack && Math.abs(read.y - dpiY) <= slack;
+  }
+
+  scaledPair(dpiX, dpiY, divisor) {
+    if (!divisor || divisor <= 1) return { x: dpiX, y: dpiY };
+    if (dpiX >= 256 || dpiY >= 256) return { x: dpiX, y: dpiY };
+    if (dpiX % divisor || dpiY % divisor) return { x: dpiX, y: dpiY };
+    return { x: dpiX / divisor, y: dpiY / divisor };
+  }
+
+  async getDpi() {
+    const response = await this.request('dpi', commands.getDpi());
+    return this.parseDpi(response.args);
+  }
+
+  async writeDpi(dpiX, dpiY, endian = 'be') {
+    await this.request('dpi', commands.setDpi(dpiX, dpiY, endian));
+    await sleep(WAIT_MS);
+    let applied = await this.getDpi();
+    if (!this.dpiMatches(applied, dpiX, dpiY)) {
+      await sleep(WAIT_MS);
+      applied = await this.getDpi();
+    }
+    return applied;
+  }
+
   async setDpi(dpiX, dpiY) {
-    await this.request('dpi', commands.setDpi(dpiX, dpiY));
+    const endian = this.dpiEndian ?? 'be';
+    const scaled = this.scaledPair(dpiX, dpiY, this.dpiDivisor ?? 1);
+    let applied = await this.writeDpi(scaled.x, scaled.y, endian);
+    if (this.dpiMatches(applied, dpiX, dpiY)) return;
+
+    const tooFast = applied.x > dpiX * 8 || applied.y > dpiY * 8;
+    if (!tooFast) return;
+
+    for (const divisor of [100, 50]) {
+      const pair = this.scaledPair(dpiX, dpiY, divisor);
+      if (pair.x === dpiX && pair.y === dpiY) continue;
+      applied = await this.writeDpi(pair.x, pair.y, 'be');
+      if (this.dpiMatches(applied, dpiX, dpiY)) {
+        this.dpiEndian = 'be';
+        this.dpiDivisor = divisor;
+        return;
+      }
+    }
+
+    applied = await this.writeDpi(dpiX, dpiY, 'le');
+    if (this.dpiMatches(applied, dpiX, dpiY)) {
+      this.dpiEndian = 'le';
+      this.dpiDivisor = 1;
+      return;
+    }
+
+    await this.writeDpi(dpiX, dpiY, 'be');
+    this.dpiEndian = 'be';
+    this.dpiDivisor = 1;
   }
 
   async getPollRate() {

@@ -157,12 +157,18 @@ export const commands = {
       args: [NOSTORE],
     };
   },
-  setDpi(dpiX, dpiY) {
+  setDpi(dpiX, dpiY, endian = 'be') {
+    const xBytes = endian === 'le'
+      ? [dpiX & 0xff, (dpiX >> 8) & 0xff]
+      : splitU16(dpiX);
+    const yBytes = endian === 'le'
+      ? [dpiY & 0xff, (dpiY >> 8) & 0xff]
+      : splitU16(dpiY);
     return {
       commandClass: 0x04,
       commandId: 0x05,
       dataSize: 0x07,
-      args: [VARSTORE, ...splitU16(dpiX), ...splitU16(dpiY), 0x00, 0x00],
+      args: [VARSTORE, ...xBytes, ...yBytes, 0x00, 0x00],
     };
   },
   getExtendedBrightness(ledId) {
