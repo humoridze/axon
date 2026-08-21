@@ -7,7 +7,6 @@ const gate = document.getElementById('gate');
 const workspace = document.getElementById('workspace');
 const controls = document.getElementById('controls');
 const toasts = document.getElementById('toasts');
-const logoLed = document.querySelector('.logo-led');
 
 const ui = {
   name: document.getElementById('device-name'),
@@ -78,19 +77,6 @@ function setBadge(text, isError = false) {
   hidBadge.classList.toggle('is-error', isError);
 }
 
-function updateLedPreview() {
-  const logo = state.lighting.logo;
-  logoLed.classList.remove('is-on', 'is-breath');
-  logoLed.style.opacity = '';
-  if (!logo || logo.effect === 'none' || logo.brightness === 0) return;
-  logoLed.style.opacity = String(Math.max(0.25, logo.brightness / 100));
-  if (logo.effect === 'breath') {
-    logoLed.classList.add('is-breath');
-    return;
-  }
-  logoLed.classList.add('is-on');
-}
-
 function renderControls(profile) {
   const blocks = [];
   if (profile.dpi) blocks.push(dpiCard(profile.dpi));
@@ -100,7 +86,6 @@ function renderControls(profile) {
   }
   controls.innerHTML = blocks.join('');
   bindControls(profile);
-  updateLedPreview();
 }
 
 function dpiCard(spec) {
@@ -237,7 +222,6 @@ function bindControls(profile) {
     brightness?.addEventListener('input', () => {
       current.brightness = Number(brightness.value);
       brightnessOut.textContent = String(current.brightness);
-      updateLedPreview();
       applyLight();
     });
 
@@ -248,7 +232,6 @@ function bindControls(profile) {
       for (const node of button.parentElement.querySelectorAll('button')) {
         node.classList.toggle('is-active', node === button);
       }
-      updateLedPreview();
       applyLight();
     });
   }
@@ -346,7 +329,6 @@ async function disconnect(fromEvent = false) {
   connectBtn.classList.add('btn-primary');
   connectBtn.classList.remove('btn-ghost');
   setBadge('');
-  updateLedPreview();
 }
 
 function boot() {
