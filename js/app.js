@@ -160,6 +160,7 @@ function dpiCard(spec) {
     <article class="card">
       <h3>${t('dpi')}</h3>
       <div class="dpi-readout"><strong id="dpi-value">${state.dpiX}</strong><span>DPI</span></div>
+      <p class="spec-line"><span>${spec.min}–${spec.max}</span><span>${spec.step}</span></p>
       <div class="field">
         <label for="dpi-x">X</label>
         <input id="dpi-x" type="range" min="${spec.min}" max="${spec.max}" step="${spec.step}" value="${state.dpiX}">
