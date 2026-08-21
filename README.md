@@ -4,6 +4,8 @@
 
 Страница: https://codexdev.ru/synapse
 
+Сайт отдаёт `humoridze.github.io` (кастомный домен). Чтобы `/synapse` работал, файлы лежат в папке `synapse/` того репозитория. Этот репозиторий — исходники драйвера.
+
 Протокол команд — [OpenRazer](https://github.com/openrazer/openrazer). Проект не связан с Razer Inc.
 
 ## Сейчас поддерживается
