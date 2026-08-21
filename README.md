@@ -1,10 +1,10 @@
-# Synapse
+# Axon
 
-Web driver for Razer mice. Runs in Chrome / Edge via [WebHID](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API), without installing Razer Synapse.
+Web driver for Razer mice. Runs in Chrome / Edge via [WebHID](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API).
 
-Site: https://codexdev.ru/synapse
+Site: https://codexdev.ru/axon
 
-Command protocol is [OpenRazer](https://github.com/openrazer/openrazer). This project is not affiliated with Razer Inc.
+Command protocol is [OpenRazer](https://github.com/openrazer/openrazer). This project is not affiliated with Razer Inc. and is not Razer Synapse.
 
 ## Support
 

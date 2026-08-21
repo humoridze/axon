@@ -1,14 +1,14 @@
-const STORAGE_KEY = 'synapse-lang';
+const STORAGE_KEY = 'axon-lang';
 
 const dictionaries = {
   en: {
-    title: 'Synapse — Razer web driver',
+    title: 'Axon — web driver for Razer mice',
     description: 'Web driver for Razer mice: DPI, polling rate, lighting.',
     brandSub: 'web driver',
     connect: 'Connect mouse',
     disconnect: 'Disconnect',
-    headline: 'Razer mice without desktop Synapse',
-    lede: 'Changes DPI, polling rate, and lighting, then writes it to the mouse. Official web Synapse supports only one mouse.',
+    headline: 'Razer mice in the browser',
+    lede: 'Sets DPI, polling rate, and lighting, then writes it to the mouse. No desktop app.',
     checkBrowser: 'Chrome or Edge, mouse over USB',
     checkSynapse: 'Fully quit Razer Synapse, including the tray',
     checkHid: 'In the HID dialog pick a Razer device, not “mouse”',
@@ -49,13 +49,13 @@ const dictionaries = {
     lang: 'Language',
   },
   ru: {
-    title: 'Synapse — веб-драйвер Razer',
+    title: 'Axon — веб-драйвер для мышей Razer',
     description: 'Веб-драйвер для мышей Razer: DPI, опрос, подсветка.',
     brandSub: 'веб-драйвер',
     connect: 'Подключить мышь',
     disconnect: 'Отключить',
-    headline: 'Мыши Razer без десктопного Synapse',
-    lede: 'Меняет DPI, частоту опроса и подсветку и пишет это в память мыши. Официальный веб-Synapse поддерживает только одну мышь.',
+    headline: 'Мыши Razer в браузере',
+    lede: 'Ставит DPI, частоту опроса и подсветку и пишет это в мышь. Без десктопной программы.',
     checkBrowser: 'Chrome или Edge, мышь по USB',
     checkSynapse: 'Razer Synapse лучше закрыть целиком, включая трей',
     checkHid: 'В диалоге HID выбирай устройство Razer, не «мышь»',
