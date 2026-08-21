@@ -21,5 +21,8 @@ export function supportedProductIds() {
 }
 
 export function hidDeviceFilters() {
-  return [{ vendorId: RAZER_VENDOR_ID }];
+  return [
+    { vendorId: RAZER_VENDOR_ID, usagePage: 0xFF00 },
+    { vendorId: RAZER_VENDOR_ID },
+  ];
 }

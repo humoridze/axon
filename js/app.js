@@ -1,5 +1,5 @@
 import { getDevice, hidDeviceFilters } from './devices/registry.js';
-import { RazerSession, openControlInterface } from './hid.js';
+import { openControlInterface } from './hid.js';
 
 const connectBtn = document.getElementById('connect-btn');
 const hidBadge = document.getElementById('hid-badge');
@@ -275,9 +275,21 @@ async function connect() {
   const picked = await requestDevices();
   if (!picked.length) return;
 
-  const { hidDevice, firmware } = await openControlInterface(picked, getDevice);
+  const granted = (await navigator.hid.getDevices()).filter((device) => device.vendorId === 0x1532);
+  const unique = [];
+  const seen = new Set();
+  for (const hidDevice of [...picked, ...granted]) {
+    const usages = (hidDevice.collections ?? []).map((collection) => `${collection.usagePage}:${collection.usage}`).join(',');
+    const key = `${hidDevice.productId}:${usages}:${hidDevice.collections?.length ?? 0}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(hidDevice);
+  }
+
+  const { session: connected, firmware } = await openControlInterface(unique, getDevice);
+  session = connected;
+  const hidDevice = session.hidDevice;
   const profile = getDevice(hidDevice.productId);
-  session = new RazerSession(hidDevice, profile);
   hidDevice.addEventListener('disconnect', () => {
     toast('Мышь отключена', true);
     disconnect(true);

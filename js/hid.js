@@ -12,6 +12,7 @@ import {
 
 const WAIT_MS = 90;
 const RETRIES = 5;
+const RAZER_REPORT = 90;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -21,13 +22,79 @@ function unwrapReport(dataView) {
   return new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
 }
 
-function isProtectedCollection(hidDevice) {
-  if (!hidDevice.collections?.length) return false;
-  return hidDevice.collections.every((collection) => {
-    const page = collection.usagePage;
-    const usage = collection.usage;
-    return page === 0x01 && (usage === 0x02 || usage === 0x06 || usage === 0x01);
+function reportByteLength(report) {
+  let bits = 0;
+  for (const item of report.items ?? []) {
+    bits += (item.reportSize ?? 0) * (item.reportCount ?? 0);
+  }
+  return Math.ceil(bits / 8);
+}
+
+function sizedPayload(payload, size) {
+  if (payload.byteLength === size) return payload;
+  const buffer = new Uint8Array(size);
+  buffer.set(payload.subarray(0, Math.min(payload.byteLength, size)));
+  return buffer;
+}
+
+function collectReports(hidDevice, kind) {
+  const reports = [];
+  for (const collection of hidDevice.collections ?? []) {
+    const list = kind === 'output' ? collection.outputReports : collection.featureReports;
+    for (const report of list ?? []) {
+      reports.push({
+        reportId: report.reportId ?? 0,
+        size: reportByteLength(report),
+        usagePage: collection.usagePage,
+        usage: collection.usage,
+        kind,
+      });
+    }
+  }
+  return reports;
+}
+
+function controlCandidates(hidDevice) {
+  const found = [
+    ...collectReports(hidDevice, 'feature'),
+    ...collectReports(hidDevice, 'output'),
+  ];
+  const preferred = found.filter((report) => report.size >= RAZER_REPORT);
+  const pool = preferred.length > 0 ? preferred : found;
+  const extras = [
+    { reportId: 0, size: RAZER_REPORT, kind: 'feature' },
+    { reportId: 0, size: 91, kind: 'feature' },
+    { reportId: 1, size: RAZER_REPORT, kind: 'feature' },
+    { reportId: 0, size: RAZER_REPORT, kind: 'output' },
+  ];
+  const seen = new Set();
+  const candidates = [];
+  for (const report of [...pool, ...extras]) {
+    const size = Math.max(report.size || RAZER_REPORT, RAZER_REPORT);
+    const key = `${report.kind}:${report.reportId}:${size}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    candidates.push({ ...report, size });
+  }
+  candidates.sort((left, right) => {
+    const vendor = (page) => (page === 0xFF00 || page === 0xFF01 ? 1 : 0);
+    return vendor(right.usagePage) - vendor(left.usagePage) || right.size - left.size;
   });
+  return candidates;
+}
+
+function scoreDevice(hidDevice) {
+  let score = 0;
+  for (const collection of hidDevice.collections ?? []) {
+    if (collection.usagePage === 0xFF00 || collection.usagePage === 0xFF01) score += 10;
+    for (const report of collection.featureReports ?? []) {
+      if (reportByteLength(report) >= RAZER_REPORT) score += 20;
+    }
+    for (const report of collection.outputReports ?? []) {
+      if (reportByteLength(report) >= RAZER_REPORT) score += 8;
+    }
+  }
+  return score;
 }
 
 export class RazerSession {
@@ -35,6 +102,9 @@ export class RazerSession {
     this.hidDevice = hidDevice;
     this.profile = profile;
     this.chain = Promise.resolve();
+    this.reportId = 0;
+    this.reportSize = RAZER_REPORT;
+    this.useOutput = false;
   }
 
   transactionId(kind) {
@@ -70,15 +140,50 @@ export class RazerSession {
     throw lastError ?? new Error('Нет ответа от устройства');
   }
 
+  async writeReport(payload) {
+    const body = sizedPayload(payload, this.reportSize);
+    if (this.useOutput) {
+      await this.hidDevice.sendReport(this.reportId, body);
+    } else {
+      await this.hidDevice.sendFeatureReport(this.reportId, body);
+    }
+  }
+
   async sendOnce(kind, packet) {
     const report = encodeReport({
       transactionId: this.transactionId(kind),
       ...packet,
     });
-    await this.hidDevice.sendFeatureReport(0x00, report);
+    await this.writeReport(report);
     await sleep(WAIT_MS);
-    const raw = unwrapReport(await this.hidDevice.receiveFeatureReport(0x00));
+    const raw = unwrapReport(await this.hidDevice.receiveFeatureReport(this.reportId));
     return decodeReport(raw);
+  }
+
+  async handshake() {
+    const packet = encodeReport({
+      transactionId: this.transactionId('info'),
+      ...commands.getFirmware(),
+    });
+    let lastError = null;
+    for (const candidate of controlCandidates(this.hidDevice)) {
+      this.reportId = candidate.reportId;
+      this.reportSize = candidate.size;
+      this.useOutput = candidate.kind === 'output';
+      try {
+        await this.writeReport(packet);
+        await sleep(WAIT_MS);
+        const raw = unwrapReport(await this.hidDevice.receiveFeatureReport(this.reportId));
+        const decoded = decodeReport(raw);
+        if (decoded.status !== STATUS.SUCCESS && decoded.status !== STATUS.BUSY) continue;
+        const firmware = `v${decoded.args[0] ?? 0}.${decoded.args[1] ?? 0}`;
+        if (firmware === 'v0.0') continue;
+        return firmware;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError ?? new Error('нет подходящего HID-отчёта');
   }
 
   async getFirmware() {
@@ -152,8 +257,7 @@ export class RazerSession {
 }
 
 export async function openControlInterface(hidDevices, resolveProfile) {
-  const candidates = hidDevices.filter((device) => !isProtectedCollection(device));
-  const queue = candidates.length > 0 ? candidates : hidDevices;
+  const queue = [...hidDevices].sort((left, right) => scoreDevice(right) - scoreDevice(left));
   const errors = [];
 
   for (const hidDevice of queue) {
@@ -161,12 +265,9 @@ export async function openControlInterface(hidDevices, resolveProfile) {
     if (!profile) continue;
     try {
       if (!hidDevice.opened) await hidDevice.open();
-      const probe = new RazerSession(hidDevice, profile);
-      const firmware = await probe.getFirmware();
-      if (firmware && firmware !== 'v0.0') {
-        return { hidDevice, firmware };
-      }
-      await hidDevice.close();
+      const session = new RazerSession(hidDevice, profile);
+      const firmware = await session.handshake();
+      return { session, firmware };
     } catch (error) {
       errors.push(error);
       if (hidDevice.opened) {
