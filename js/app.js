@@ -1,5 +1,5 @@
 import { getDevice, hidDeviceFilters } from './devices/registry.js';
-import { RazerSession, openControlInterface, exclusionFilters } from './hid.js';
+import { RazerSession, openControlInterface } from './hid.js';
 
 const connectBtn = document.getElementById('connect-btn');
 const hidBadge = document.getElementById('hid-badge');
@@ -256,17 +256,12 @@ function bindControls(profile) {
 
 async function requestDevices() {
   try {
-    const options = { filters: hidDeviceFilters(), exclusionFilters };
-    try {
-      return await navigator.hid.requestDevice(options);
-    } catch (error) {
-      if (String(error.name) === 'TypeError') {
-        return navigator.hid.requestDevice({ filters: hidDeviceFilters() });
-      }
-      throw error;
-    }
+    return await navigator.hid.requestDevice({ filters: hidDeviceFilters() });
   } catch (error) {
-    if (error.name === 'NotFoundError') return [];
+    if (error.name === 'NotFoundError') {
+      toast('Список пустой: Edge скрывает мышиный интерфейс. Закройте Razer Synapse и выберите устройство Razer, не «мышь».', true);
+      return [];
+    }
     throw error;
   }
 }

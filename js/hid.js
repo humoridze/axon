@@ -22,21 +22,13 @@ function unwrapReport(dataView) {
 }
 
 function isProtectedCollection(hidDevice) {
-  return hidDevice.collections.some((collection) => {
-    const page = collection.usagePage;
-    const usage = collection.usage;
-    return page === 0x01 && (usage === 0x02 || usage === 0x06);
-  }) && hidDevice.collections.every((collection) => {
+  if (!hidDevice.collections?.length) return false;
+  return hidDevice.collections.every((collection) => {
     const page = collection.usagePage;
     const usage = collection.usage;
     return page === 0x01 && (usage === 0x02 || usage === 0x06 || usage === 0x01);
   });
 }
-
-export const exclusionFilters = [
-  { usagePage: 0x01, usage: 0x02 },
-  { usagePage: 0x01, usage: 0x06 },
-];
 
 export class RazerSession {
   constructor(hidDevice, profile) {

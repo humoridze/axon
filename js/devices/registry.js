@@ -21,14 +21,5 @@ export function supportedProductIds() {
 }
 
 export function hidDeviceFilters() {
-  return catalog.flatMap((device) => {
-    const base = {
-      vendorId: device.vendorId ?? RAZER_VENDOR_ID,
-      productId: device.productId,
-    };
-    return [
-      { ...base, usagePage: 0xFF00 },
-      base,
-    ];
-  });
+  return [{ vendorId: RAZER_VENDOR_ID }];
 }
