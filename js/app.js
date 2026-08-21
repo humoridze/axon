@@ -13,6 +13,8 @@ const ui = {
   pid: document.getElementById('device-pid'),
   firmware: document.getElementById('device-fw'),
   serial: document.getElementById('device-serial'),
+  batteryRow: document.getElementById('battery-row'),
+  battery: document.getElementById('device-battery'),
 };
 
 let session = null;
@@ -29,9 +31,23 @@ function lightingState(zone) {
     state.lighting[zone.id] = {
       brightness: 100,
       effect: zone.effects.includes('static') ? 'static' : zone.effects[0],
+      rgb: [...(zone.defaultRgb ?? [0, 255, 0])],
     };
   }
   return state.lighting[zone.id];
+}
+
+function rgbToHex(rgb) {
+  return `#${rgb.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function hexToRgb(hex) {
+  const digits = hex.replace('#', '');
+  return [
+    Number.parseInt(digits.slice(0, 2), 16),
+    Number.parseInt(digits.slice(2, 4), 16),
+    Number.parseInt(digits.slice(4, 6), 16),
+  ];
 }
 
 function toast(message, isError = false) {
@@ -125,7 +141,13 @@ function pollCard(spec) {
 
 function lightingCard(zone) {
   const current = lightingState(zone);
-  const labels = { none: 'Выкл', static: 'Статичный', breath: 'Дыхание' };
+  const labels = {
+    none: 'Выкл',
+    static: 'Статичный',
+    breath: 'Дыхание',
+    spectrum: 'Спектр',
+    wave: 'Волна',
+  };
   const buttons = zone.effects.map((effect) => (
     `<button type="button" data-effect="${effect}" class="${effect === current.effect ? 'is-active' : ''}">${labels[effect] ?? effect}</button>`
   )).join('');
@@ -136,10 +158,17 @@ function lightingCard(zone) {
         <output id="brightness-out-${zone.id}">${current.brightness}</output>
       </div>`
     : '';
+  const color = zone.color === 'rgb'
+    ? `<div class="field field-color">
+        <label for="color-${zone.id}">RGB</label>
+        <input id="color-${zone.id}" type="color" value="${rgbToHex(current.rgb)}">
+      </div>`
+    : '';
   return `
     <article class="card">
       <h3>Подсветка · ${zone.name}</h3>
       ${brightness}
+      ${color}
       <div class="seg" data-zone="${zone.id}">${buttons}</div>
     </article>
   `;
@@ -210,7 +239,7 @@ function bindControls(profile) {
     const current = lightingState(zone);
     const applyLight = debounce(async () => {
       try {
-        await session.setLighting(zone, current.effect, zone.defaultRgb ?? [0, 255, 0]);
+        await session.setLighting(zone, current.effect, current.rgb ?? zone.defaultRgb ?? [0, 255, 0]);
         if (zone.brightness) await session.setBrightness(zone.ledId, percentToByte(current.brightness));
       } catch (error) {
         toast(error.message, true);
@@ -222,6 +251,12 @@ function bindControls(profile) {
     brightness?.addEventListener('input', () => {
       current.brightness = Number(brightness.value);
       brightnessOut.textContent = String(current.brightness);
+      applyLight();
+    });
+
+    const color = document.getElementById(`color-${zone.id}`);
+    color?.addEventListener('input', () => {
+      current.rgb = hexToRgb(color.value);
       applyLight();
     });
 
@@ -298,6 +333,17 @@ async function connect() {
     const poll = await session.getPollRate();
     if (poll) state.pollRate = poll;
   } catch { /* keep defaults */ }
+  ui.batteryRow.hidden = !profile.battery;
+  ui.battery.textContent = '—';
+  if (profile.battery) {
+    try {
+      const battery = await session.getBattery();
+      ui.battery.textContent = battery.charging
+        ? `${battery.percent}% · зарядка`
+        : `${battery.percent}%`;
+    } catch { /* keep defaults */ }
+  }
+
   for (const zone of profile.lighting?.zones ?? []) {
     const current = lightingState(zone);
     if (zone.brightness) {
@@ -325,6 +371,8 @@ async function disconnect(fromEvent = false) {
   controls.innerHTML = '';
   workspace.hidden = true;
   gate.hidden = false;
+  ui.batteryRow.hidden = true;
+  ui.battery.textContent = '—';
   connectBtn.textContent = 'Подключить мышь';
   connectBtn.classList.add('btn-primary');
   connectBtn.classList.remove('btn-ghost');

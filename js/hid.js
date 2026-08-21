@@ -242,11 +242,29 @@ export class RazerSession {
       await this.request('lighting', commands.setExtendedNone(ledId));
       return;
     }
+    if (effect === 'spectrum') {
+      await this.request('lighting', commands.setExtendedSpectrum(ledId));
+      return;
+    }
+    if (effect === 'wave') {
+      await this.request('lighting', commands.setExtendedWave(ledId));
+      return;
+    }
     if (effect === 'breath') {
       await this.request('lighting', commands.setExtendedBreath(ledId, rgb[0], rgb[1], rgb[2]));
       return;
     }
     await this.request('lighting', commands.setExtendedStatic(ledId, rgb[0], rgb[1], rgb[2]));
+  }
+
+  async getBattery() {
+    const level = await this.request('battery', commands.getBattery());
+    const charge = await this.request('battery', commands.getCharging());
+    const raw = level.args[1] ?? 0;
+    return {
+      percent: Math.round((raw / 255) * 100),
+      charging: (charge.args[1] ?? 0) === 1,
+    };
   }
 
   async close() {

@@ -205,4 +205,26 @@ export const commands = {
       args: [VARSTORE, ledId, 0x02, 0x01, 0x00, 0x01, red, green, blue],
     };
   },
+  setExtendedSpectrum(ledId) {
+    return {
+      commandClass: 0x0F,
+      commandId: 0x02,
+      dataSize: 0x06,
+      args: [VARSTORE, ledId, 0x03],
+    };
+  },
+  setExtendedWave(ledId, direction = 0x01) {
+    return {
+      commandClass: 0x0F,
+      commandId: 0x02,
+      dataSize: 0x06,
+      args: [VARSTORE, ledId, 0x04, direction, 0x28],
+    };
+  },
+  getBattery() {
+    return { commandClass: 0x07, commandId: 0x80, dataSize: 0x02 };
+  },
+  getCharging() {
+    return { commandClass: 0x07, commandId: 0x84, dataSize: 0x02 };
+  },
 };

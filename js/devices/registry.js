@@ -1,7 +1,9 @@
 import deathadderEssential2021 from './deathadder-essential-2021.js';
+import basiliskV3ProWireless from './basilisk-v3-pro-wireless.js';
 
 const catalog = [
   deathadderEssential2021,
+  basiliskV3ProWireless,
 ];
 
 const byProductId = new Map(catalog.map((device) => [device.productId, device]));
