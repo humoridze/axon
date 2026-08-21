@@ -1,47 +1,51 @@
 # Synapse
 
-Веб-драйвер для мышей Razer. Работает в Chrome / Edge через [WebHID](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API), без установки Razer Synapse.
+Web driver for Razer mice. Runs in Chrome / Edge via [WebHID](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API), without installing Razer Synapse.
 
-Страница: https://codexdev.ru/synapse
+Site: https://codexdev.ru/synapse
 
-Протокол команд — [OpenRazer](https://github.com/openrazer/openrazer). Проект не связан с Razer Inc.
+Command protocol is [OpenRazer](https://github.com/openrazer/openrazer). This project is not affiliated with Razer Inc.
 
-## Сейчас поддерживается
+## Support
 
-| Мышь | VID:PID |
+Verified on hardware:
+
+| Mouse | VID:PID |
 | --- | --- |
 | DeathAdder Essential (2021) | `1532:0098` |
 | Basilisk V3 Pro (Wireless) | `1532:00AB` |
 
-DeathAdder Essential: DPI (оси X/Y), опрос 125/500/1000 Гц, яркость и эффекты логотипа (выкл / статичный / дыхание). Цвет LED аппаратно зелёный.
+DeathAdder Essential: DPI (X/Y axes), polling 125/500/1000 Hz, logo brightness and effects (off / static / breathing). The LED is hardware green.
 
-Basilisk V3 Pro Wireless: DPI до 30000, опрос 125/500/1000 Гц, заряд, подсветка логотипа / колёсика / корпуса (выкл / статичный / спектр / волна).
+Basilisk V3 Pro Wireless: DPI up to 30000, polling 125/500/1000 Hz, battery, logo / scroll wheel / body lighting (off / static / spectrum / wave).
 
-## Как пользоваться
+Other mice from [OpenRazer](https://github.com/openrazer/openrazer) are included by PID and driver capabilities, but have not been tested on hardware. Profiles live in `js/devices/`.
 
-1. Chromium-браузер (Chrome, Edge, Opera) и HTTPS.
-2. Мышь по USB. Razer Synapse лучше закрыть.
-3. «Подключить мышь» → выбрать устройство в системном диалоге.
-4. Если Chrome показывает только «мышь» и соединение не проходит — это защищённая HID-коллекция. Нужен vendor-интерфейс того же устройства (обычно он есть в том же списке).
+## Usage
 
-Настройки пишутся в память мыши, фоновый процесс не нужен.
+1. A Chromium browser (Chrome, Edge, Opera) over HTTPS.
+2. Mouse over USB. Quit Razer Synapse first.
+3. “Connect mouse” → pick the device in the system dialog.
+4. If Chrome only shows “mouse” and the connection fails, that HID collection is blocked. Use the vendor interface of the same device (usually in the same list).
 
-## Добавить новую мышь
+Settings are written to the mouse; no background process is required.
 
-1. Создать `js/devices/<slug>.js` по образцу `deathadder-essential-2021.js`.
-2. Импортировать профиль в `js/devices/registry.js` и добавить в `catalog`.
-3. Transaction ID, DPI, polling protocol (`v1` / `v2`) и зоны подсветки брать из OpenRazer (`driver/razermouse_driver.c`, `daemon/openrazer_daemon/hardware/mouse.py`).
+## Add a mouse
 
-Профиль описывает возможности. UI собирается по ним: карточки DPI, опроса и подсветки появляются только если они есть у модели.
+1. Create `js/devices/<slug>.js` following `deathadder-essential-2021.js`.
+2. Import the profile in `js/devices/registry.js` and add it to `catalog`.
+3. Take transaction ID, DPI, polling protocol (`v1` / `v2`), and lighting zones from OpenRazer (`driver/razermouse_driver.c`, `daemon/openrazer_daemon/hardware/mouse.py`).
 
-## Локальный запуск
+The profile describes capabilities. The UI is built from them: DPI, polling, and lighting cards appear only when the model has them.
 
-Нужен HTTP(S), `file://` WebHID не откроет.
+## Local run
+
+HTTP(S) is required; WebHID will not work on `file://`.
 
 ```bash
 python -m http.server 8080
 ```
 
-Открыть `http://localhost:8080`.
+Open `http://localhost:8080`.
 
 GitHub Pages: Settings → Pages → Deploy from a branch → `main` / `/ (root)`.

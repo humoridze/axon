@@ -1,0 +1,49 @@
+export default {
+  id: "basilisk-v-3-pro-35-k-phantom-green-edition-wireless",
+  name: "Basilisk V3 Pro 35K Phantom Green Edition (Wireless)",
+  vendorId: 0x1532,
+  productId: 0x00D7,
+  tested: false,
+  transactionId: {
+    default: 0x1F,
+    info: 0x1F,
+    dpi: 0x1F,
+    pollRate: 0x1F,
+    lighting: 0x1F,
+    battery: 0x1F,
+  },
+  dpi: {
+    min: 100,
+    max: 35000,
+    step: 50,
+    independentAxes: true,
+  },
+  pollRate: {
+    protocol: "v1",
+    rates: [125, 500, 1000],
+  },
+  battery: true,
+  lighting: {
+    protocol: "extended-matrix",
+    zones: [
+      {
+        id: "scroll",
+        ledId: 0x01,
+        name: "Колёсико",
+        brightness: true,
+        color: "rgb",
+        defaultRgb: [0x00, 0xFF, 0x00],
+        effects: ["none", "static", "spectrum", "wave"],
+      },
+      {
+        id: "backlight",
+        ledId: 0x00,
+        name: "Корпус",
+        brightness: true,
+        color: "rgb",
+        defaultRgb: [0x00, 0xFF, 0x00],
+        effects: ["none", "static", "spectrum", "wave"],
+      },
+    ],
+  },
+};

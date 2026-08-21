@@ -1,0 +1,56 @@
+export default {
+  id: "naga-left-handed-2020",
+  name: "Naga Left Handed Edition 2020",
+  vendorId: 0x1532,
+  productId: 0x008D,
+  tested: false,
+  transactionId: {
+    default: 0x1F,
+    info: 0x1F,
+    dpi: 0x1F,
+    pollRate: 0x1F,
+    lighting: 0x1F,
+  },
+  dpi: {
+    min: 100,
+    max: 20000,
+    step: 50,
+    independentAxes: true,
+  },
+  pollRate: {
+    protocol: "v1",
+    rates: [125, 500, 1000],
+  },
+  lighting: {
+    protocol: "extended-matrix",
+    zones: [
+      {
+        id: "logo",
+        ledId: 0x04,
+        name: "Логотип",
+        brightness: true,
+        color: "rgb",
+        defaultRgb: [0x00, 0xFF, 0x00],
+        effects: ["none", "static", "breath", "spectrum", "wave"],
+      },
+      {
+        id: "scroll",
+        ledId: 0x01,
+        name: "Колёсико",
+        brightness: true,
+        color: "rgb",
+        defaultRgb: [0x00, 0xFF, 0x00],
+        effects: ["none", "static", "breath", "spectrum", "wave"],
+      },
+      {
+        id: "right",
+        ledId: 0x10,
+        name: "Правый бок",
+        brightness: true,
+        color: "rgb",
+        defaultRgb: [0x00, 0xFF, 0x00],
+        effects: ["none", "static", "breath", "spectrum", "wave"],
+      },
+    ],
+  },
+};

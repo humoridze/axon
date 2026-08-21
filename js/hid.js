@@ -1,3 +1,4 @@
+import { t } from './i18n.js';
 import {
   STATUS,
   commands,
@@ -131,13 +132,13 @@ export class RazerSession {
         if (response.status === STATUS.SUCCESS || response.status === STATUS.BUSY) {
           return response;
         }
-        lastError = new Error(`Команда отклонена: ${statusLabel(response.status)}`);
+        lastError = new Error(t('commandRejected', { status: statusLabel(response.status) }));
       } catch (error) {
         lastError = error;
       }
       await sleep(WAIT_MS);
     }
-    throw lastError ?? new Error('Нет ответа от устройства');
+    throw lastError ?? new Error(t('noReply'));
   }
 
   async writeReport(payload) {
@@ -183,7 +184,7 @@ export class RazerSession {
         lastError = error;
       }
     }
-    throw lastError ?? new Error('нет подходящего HID-отчёта');
+    throw lastError ?? new Error(t('noHidReport'));
   }
 
   async getFirmware() {
@@ -297,9 +298,9 @@ export async function openControlInterface(hidDevices, resolveProfile) {
   const unknown = hidDevices.find((device) => !resolveProfile(device.productId));
   if (unknown && queue.every((device) => !resolveProfile(device.productId))) {
     const pid = unknown.productId.toString(16).padStart(4, '0');
-    throw new Error(`Мышь 1532:${pid} пока не поддерживается`);
+    throw new Error(t('unsupportedMouse', { pid }));
   }
 
   const detail = errors[0]?.message ? `: ${errors[0].message}` : '';
-  throw new Error(`Не найден управляющий HID-интерфейс${detail}`);
+  throw new Error(t('noControlInterface', { detail }));
 }

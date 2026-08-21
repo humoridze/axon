@@ -98,6 +98,31 @@ body {
   gap: 12px;
 }
 
+.lang-switch {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+
+.lang-switch button {
+  min-width: 40px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 700 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.lang-switch button.is-active {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: 999px;
@@ -156,7 +181,7 @@ main {
 }
 
 .gate {
-  max-width: 640px;
+  max-width: 760px;
   padding: 28px 0 40px;
 }
 
@@ -200,6 +225,51 @@ main {
 .mono {
   font-family: var(--mono);
   font-size: 0.92em;
+}
+
+.catalog {
+  margin-top: 8px;
+}
+
+.catalog h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.catalog p {
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+.catalog-list {
+  margin: 0 0 16px;
+  padding-left: 18px;
+}
+
+.catalog-list li {
+  margin: 4px 0;
+}
+
+.catalog-list-dense {
+  columns: 2;
+  gap: 24px;
+  font-size: 13px;
+}
+
+.catalog details summary {
+  cursor: pointer;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.untested-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .workspace {
@@ -443,6 +513,10 @@ input[type="range"]::-webkit-slider-thumb {
 @media (max-width: 860px) {
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .catalog-list-dense {
+    columns: 1;
   }
 
   .dpi-readout strong {

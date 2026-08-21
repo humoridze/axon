@@ -1,9 +1,9 @@
 export default {
-  id: 'deathadder-essential-2021',
-  name: 'DeathAdder Essential (2021)',
+  id: "viper",
+  name: "Viper",
   vendorId: 0x1532,
-  productId: 0x0098,
-  tested: true,
+  productId: 0x0078,
+  tested: false,
   transactionId: {
     default: 0xFF,
     info: 0xFF,
@@ -13,25 +13,25 @@ export default {
   },
   dpi: {
     min: 100,
-    max: 6400,
+    max: 16000,
     step: 100,
     independentAxes: true,
   },
   pollRate: {
-    protocol: 'v1',
+    protocol: "v1",
     rates: [125, 500, 1000],
   },
   lighting: {
-    protocol: 'extended-matrix',
+    protocol: "extended-matrix",
     zones: [
       {
-        id: 'logo',
+        id: "logo",
         ledId: 0x04,
-        name: 'Логотип',
+        name: "Логотип",
         brightness: true,
-        color: 'mono-green',
+        color: "rgb",
         defaultRgb: [0x00, 0xFF, 0x00],
-        effects: ['none', 'static', 'breath'],
+        effects: ["none", "static", "breath", "spectrum"],
       },
     ],
   },

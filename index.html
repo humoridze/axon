@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0c0e0c">
-  <meta name="description" content="Веб-драйвер для мышей Razer: DPI, опрос, подсветка.">
-  <title>Synapse — веб-драйвер Razer</title>
+  <meta name="description" content="Web driver for Razer mice: DPI, polling rate, lighting.">
+  <title>Synapse — Razer web driver</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0e0c'/%3E%3Crect x='18' y='12' width='8' height='40' fill='%2344d62c'/%3E%3C/svg%3E" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,27 +19,40 @@
     <div class="brand">
       <div>
         <p class="brand-name">Synapse</p>
-        <p class="brand-sub">веб-драйвер</p>
+        <p class="brand-sub" data-i18n="brandSub">web driver</p>
       </div>
     </div>
     <div class="topbar-actions">
+      <div class="lang-switch" role="group">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="ru">RU</button>
+      </div>
       <span id="hid-badge" class="badge" hidden></span>
-      <button id="connect-btn" class="btn btn-primary" type="button">Подключить мышь</button>
+      <button id="connect-btn" class="btn btn-primary" type="button">Connect mouse</button>
     </div>
   </header>
 
   <main>
     <section id="gate" class="gate">
-      <h1>Мыши Razer без десктопного Synapse</h1>
-      <p class="lede">
-        Меняет DPI, частоту опроса и подсветку и пишет это в память мыши.
-        Официальный веб-Synapse поддерживает только одну мышь.
+      <h1 data-i18n="headline">Razer mice without desktop Synapse</h1>
+      <p class="lede" data-i18n="lede">
+        Changes DPI, polling rate, and lighting, then writes it to the mouse.
+        Official web Synapse supports only one mouse.
       </p>
       <ul class="checklist">
-        <li>Chrome или Edge, мышь по USB</li>
-        <li>Razer Synapse лучше закрыть целиком, включая трей</li>
-        <li>В диалоге HID выбирай устройство Razer, не «мышь»</li>
+        <li data-i18n="checkBrowser">Chrome or Edge, mouse over USB</li>
+        <li data-i18n="checkSynapse">Fully quit Razer Synapse, including the tray</li>
+        <li data-i18n="checkHid">In the HID dialog pick a Razer device, not “mouse”</li>
       </ul>
+      <section class="catalog">
+        <h2 data-i18n="support">Support</h2>
+        <p data-i18n="testedOnHardware">Verified on hardware:</p>
+        <ul id="tested-list" class="catalog-list"></ul>
+        <details>
+          <summary id="untested-summary">Other OpenRazer models, untested</summary>
+          <ul id="untested-list" class="catalog-list catalog-list-dense"></ul>
+        </details>
+      </section>
     </section>
 
     <section id="workspace" class="workspace" hidden>
@@ -48,10 +61,11 @@
           <h2 id="device-name">—</h2>
           <dl class="meta-grid">
             <div><dt>PID</dt><dd id="device-pid">—</dd></div>
-            <div><dt>Прошивка</dt><dd id="device-fw">—</dd></div>
-            <div class="meta-wide"><dt>Серийный номер</dt><dd id="device-serial">—</dd></div>
-            <div id="battery-row" class="meta-wide" hidden><dt>Заряд</dt><dd id="device-battery">—</dd></div>
+            <div><dt data-i18n="firmware">Firmware</dt><dd id="device-fw">—</dd></div>
+            <div class="meta-wide"><dt data-i18n="serial">Serial number</dt><dd id="device-serial">—</dd></div>
+            <div id="battery-row" class="meta-wide" hidden><dt data-i18n="battery">Battery</dt><dd id="device-battery">—</dd></div>
           </dl>
+          <p id="untested-note" class="untested-note" hidden data-i18n="untestedNote">OpenRazer profile, not verified on this model.</p>
         </div>
       </aside>
       <div id="controls" class="controls"></div>
@@ -61,10 +75,10 @@
   <footer class="foot">
     <nav class="foot-links">
       <a href="https://github.com/humoridze" rel="noreferrer">GitHub</a>
-      <a href="https://github.com/humoridze/synapse" rel="noreferrer">Репозиторий</a>
+      <a href="https://github.com/humoridze/synapse" rel="noreferrer" data-i18n="repo">Repository</a>
       <a href="https://github.com/openrazer/openrazer" rel="noreferrer">OpenRazer</a>
     </nav>
-    <p>Не связан с Razer Inc.</p>
+    <p data-i18n="disclaimer">Not affiliated with Razer Inc.</p>
   </footer>
 
   <div id="toasts" class="toasts" aria-live="polite"></div>

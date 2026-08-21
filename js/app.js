@@ -1,5 +1,13 @@
-import { getDevice, hidDeviceFilters } from './devices/registry.js';
+import { getDevice, hidDeviceFilters, listDevices } from './devices/registry.js';
 import { openControlInterface } from './hid.js';
+import {
+  applyStatic,
+  currentLocale,
+  effectLabel,
+  setLocale,
+  t,
+  zoneLabel,
+} from './i18n.js';
 
 const connectBtn = document.getElementById('connect-btn');
 const hidBadge = document.getElementById('hid-badge');
@@ -15,15 +23,19 @@ const ui = {
   serial: document.getElementById('device-serial'),
   batteryRow: document.getElementById('battery-row'),
   battery: document.getElementById('device-battery'),
+  untestedNote: document.getElementById('untested-note'),
 };
 
 let session = null;
+let activeProfile = null;
 let state = {
   dpiX: 1600,
   dpiY: 1600,
   linkAxes: true,
   pollRate: 1000,
   lighting: {},
+  batteryPercent: null,
+  batteryCharging: false,
 };
 
 function lightingState(zone) {
@@ -87,6 +99,42 @@ function pidLabel(productId) {
   return `1532:${productId.toString(16).padStart(4, '0').toUpperCase()}`;
 }
 
+function catalogItem(device) {
+  return `<li>${device.name} <span class="mono">${pidLabel(device.productId)}</span></li>`;
+}
+
+function renderCatalog() {
+  const tested = [];
+  const untested = [];
+  for (const device of listDevices()) {
+    (device.tested ? tested : untested).push(device);
+  }
+  document.getElementById('tested-list').innerHTML = tested.map(catalogItem).join('');
+  document.getElementById('untested-list').innerHTML = untested.map(catalogItem).join('');
+  const summary = document.getElementById('untested-summary');
+  if (summary) summary.textContent = t('untestedSummary', { n: untested.length });
+}
+
+function batteryText() {
+  if (state.batteryPercent == null) return '—';
+  if (state.batteryCharging) return t('charging', { percent: state.batteryPercent });
+  return `${state.batteryPercent}%`;
+}
+
+function syncConnectButton() {
+  connectBtn.textContent = session ? t('disconnect') : t('connect');
+}
+
+function applyLanguage() {
+  applyStatic();
+  document.querySelector('.lang-switch')?.setAttribute('aria-label', t('lang'));
+  renderCatalog();
+  syncConnectButton();
+  ui.battery.textContent = batteryText();
+  if (session && activeProfile) renderControls(activeProfile);
+  if (connectBtn.disabled && !session) setBadge(t('needChromium'), true);
+}
+
 function setBadge(text, isError = false) {
   hidBadge.hidden = !text;
   hidBadge.textContent = text;
@@ -106,11 +154,11 @@ function renderControls(profile) {
 
 function dpiCard(spec) {
   const axes = spec.independentAxes
-    ? `<label class="check"><input id="link-axes" type="checkbox" ${state.linkAxes ? 'checked' : ''}>Связать оси</label>`
+    ? `<label class="check"><input id="link-axes" type="checkbox" ${state.linkAxes ? 'checked' : ''}>${t('linkAxes')}</label>`
     : '';
   return `
     <article class="card">
-      <h3>Чувствительность</h3>
+      <h3>${t('dpi')}</h3>
       <div class="dpi-readout"><strong id="dpi-value">${state.dpiX}</strong><span>DPI</span></div>
       <div class="field">
         <label for="dpi-x">X</label>
@@ -129,11 +177,11 @@ function dpiCard(spec) {
 
 function pollCard(spec) {
   const buttons = spec.rates.map((hz) => (
-    `<button type="button" data-poll="${hz}" class="${hz === state.pollRate ? 'is-active' : ''}">${hz} Гц</button>`
+    `<button type="button" data-poll="${hz}" class="${hz === state.pollRate ? 'is-active' : ''}">${t('pollHz', { hz })}</button>`
   )).join('');
   return `
     <article class="card">
-      <h3>Частота опроса</h3>
+      <h3>${t('pollRate')}</h3>
       <div class="seg" id="poll-seg">${buttons}</div>
     </article>
   `;
@@ -141,15 +189,8 @@ function pollCard(spec) {
 
 function lightingCard(zone) {
   const current = lightingState(zone);
-  const labels = {
-    none: 'Выкл',
-    static: 'Статичный',
-    breath: 'Дыхание',
-    spectrum: 'Спектр',
-    wave: 'Волна',
-  };
   const buttons = zone.effects.map((effect) => (
-    `<button type="button" data-effect="${effect}" class="${effect === current.effect ? 'is-active' : ''}">${labels[effect] ?? effect}</button>`
+    `<button type="button" data-effect="${effect}" class="${effect === current.effect ? 'is-active' : ''}">${effectLabel(effect)}</button>`
   )).join('');
   const brightness = zone.brightness
     ? `<div class="field">
@@ -166,7 +207,7 @@ function lightingCard(zone) {
     : '';
   return `
     <article class="card">
-      <h3>Подсветка · ${zone.name}</h3>
+      <h3>${t('lighting', { zone: zoneLabel(zone) })}</h3>
       ${brightness}
       ${color}
       <div class="seg" data-zone="${zone.id}">${buttons}</div>
@@ -277,7 +318,7 @@ async function requestDevices() {
     return await navigator.hid.requestDevice({ filters: hidDeviceFilters() });
   } catch (error) {
     if (error.name === 'NotFoundError') {
-      toast('Список пустой: Edge скрывает мышиный интерфейс. Закройте Razer Synapse и выберите устройство Razer, не «мышь».', true);
+      toast(t('emptyPicker'), true);
       return [];
     }
     throw error;
@@ -308,14 +349,16 @@ async function connect() {
   session = connected;
   const hidDevice = session.hidDevice;
   const profile = getDevice(hidDevice.productId);
+  activeProfile = profile;
   hidDevice.addEventListener('disconnect', () => {
-    toast('Мышь отключена', true);
+    toast(t('mouseGone'), true);
     disconnect(true);
   });
 
   ui.name.textContent = profile.name;
   ui.pid.textContent = pidLabel(profile.productId);
   ui.firmware.textContent = firmware;
+  ui.untestedNote.hidden = Boolean(profile.tested);
   try {
     ui.serial.textContent = await session.getSerial();
   } catch {
@@ -335,12 +378,14 @@ async function connect() {
   } catch { /* keep defaults */ }
   ui.batteryRow.hidden = !profile.battery;
   ui.battery.textContent = '—';
+  state.batteryPercent = null;
+  state.batteryCharging = false;
   if (profile.battery) {
     try {
       const battery = await session.getBattery();
-      ui.battery.textContent = battery.charging
-        ? `${battery.percent}% · зарядка`
-        : `${battery.percent}%`;
+      state.batteryPercent = battery.percent;
+      state.batteryCharging = battery.charging;
+      ui.battery.textContent = batteryText();
     } catch { /* keep defaults */ }
   }
 
@@ -356,9 +401,9 @@ async function connect() {
   renderControls(profile);
   gate.hidden = true;
   workspace.hidden = false;
-  connectBtn.textContent = 'Отключить';
   connectBtn.classList.remove('btn-primary');
   connectBtn.classList.add('btn-ghost');
+  syncConnectButton();
   setBadge(profile.name);
 }
 
@@ -367,23 +412,34 @@ async function disconnect(fromEvent = false) {
     try { await session.close(); } catch { /* already gone */ }
   }
   session = null;
+  activeProfile = null;
   state.lighting = {};
+  state.batteryPercent = null;
+  state.batteryCharging = false;
   controls.innerHTML = '';
   workspace.hidden = true;
   gate.hidden = false;
   ui.batteryRow.hidden = true;
   ui.battery.textContent = '—';
-  connectBtn.textContent = 'Подключить мышь';
+  ui.untestedNote.hidden = true;
   connectBtn.classList.add('btn-primary');
   connectBtn.classList.remove('btn-ghost');
+  syncConnectButton();
   setBadge('');
 }
 
 function boot() {
+  applyLanguage();
+  document.querySelector('.lang-switch')?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-lang]');
+    if (!button || button.dataset.lang === currentLocale()) return;
+    setLocale(button.dataset.lang);
+    applyLanguage();
+  });
   if (!('hid' in navigator)) {
     connectBtn.disabled = true;
-    setBadge('Нужен Chrome или Edge', true);
-    toast('WebHID недоступен в этом браузере', true);
+    setBadge(t('needChromium'), true);
+    toast(t('noWebHid'), true);
     return;
   }
   connectBtn.addEventListener('click', async () => {
