@@ -13,11 +13,12 @@ Verified on hardware:
 | Mouse | VID:PID |
 | --- | --- |
 | DeathAdder Essential (2021) | `1532:0098` |
+| Basilisk V3 Pro (Wired) | `1532:00AA` |
 | Basilisk V3 Pro (Wireless) | `1532:00AB` |
 
 DeathAdder Essential: DPI (X/Y axes), polling 125/500/1000 Hz, logo brightness and effects (off / static / breathing). The LED is hardware green.
 
-Basilisk V3 Pro Wireless: DPI up to 30000, polling 125/500/1000 Hz, battery, logo / scroll wheel / body lighting (off / static / spectrum / wave).
+Basilisk V3 Pro (wired `00AA` / wireless `00AB`): DPI up to 30000, polling 125/500/1000 Hz, battery, logo / scroll wheel / body lighting (off / static / spectrum / wave).
 
 Other mice from [OpenRazer](https://github.com/openrazer/openrazer) are included by PID and driver capabilities, but have not been tested on hardware. Profiles live in `js/devices/`.
 
