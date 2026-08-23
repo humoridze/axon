@@ -124,10 +124,6 @@ Command protocol is [OpenRazer](https://github.com/openrazer/openrazer). This pr
 | Viper V3 Pro (Wired) | `1532:00C0` |
 | Viper V3 Pro (Wireless) | `1532:00C1` |
 
-DeathAdder Essential (2021): DPI (X/Y axes), polling 125/500/1000 Hz, logo brightness and effects (off / static / breathing). The LED is hardware green.
-
-Basilisk V3 Pro (wired `00AA` / wireless `00AB`): DPI up to 30000, polling 125/500/1000 Hz, battery, logo / scroll wheel / body lighting (off / static / spectrum / wave).
-
 ## Usage
 
 1. A Chromium browser (Chrome, Edge, Opera) over HTTPS.
