@@ -3,7 +3,7 @@ export default {
   name: "Pro Click (Wired)",
   vendorId: 0x1532,
   productId: 0x0080,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

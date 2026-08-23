@@ -3,7 +3,7 @@ export default {
   name: "Pro Click V2 Vertical Edition (Wired)",
   vendorId: 0x1532,
   productId: 0x00C7,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

@@ -3,7 +3,7 @@ export default {
   name: "Lancehead Tournament Edition",
   vendorId: 0x1532,
   productId: 0x0060,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x3F,
     info: 0x3F,

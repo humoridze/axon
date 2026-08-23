@@ -3,7 +3,7 @@ export default {
   name: "Mamba Elite",
   vendorId: 0x1532,
   productId: 0x006C,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

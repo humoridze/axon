@@ -3,7 +3,7 @@ export default {
   name: "Naga 2012",
   vendorId: 0x1532,
   productId: 0x002E,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

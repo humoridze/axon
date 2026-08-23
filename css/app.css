@@ -185,6 +185,10 @@ main {
   gap: 28px;
 }
 
+.catalog details + details {
+  margin-top: 16px;
+}
+
 .catalog details summary {
   cursor: pointer;
   margin-bottom: 8px;

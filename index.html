@@ -39,9 +39,11 @@
       </ul>
       <section class="catalog">
         <h2 data-i18n="support">Support</h2>
-        <p data-i18n="testedOnHardware">Verified on hardware:</p>
-        <ul id="tested-list" class="catalog-list"></ul>
-        <details>
+        <details open>
+          <summary id="tested-summary">Supported models</summary>
+          <ul id="tested-list" class="catalog-list catalog-list-dense"></ul>
+        </details>
+        <details id="untested-block" hidden>
           <summary id="untested-summary">Other OpenRazer models, untested</summary>
           <ul id="untested-list" class="catalog-list catalog-list-dense"></ul>
         </details>

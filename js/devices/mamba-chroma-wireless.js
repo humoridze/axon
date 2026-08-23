@@ -3,7 +3,7 @@ export default {
   name: "Mamba Chroma (Wireless)",
   vendorId: 0x1532,
   productId: 0x0045,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

@@ -3,7 +3,7 @@ export default {
   name: "DeathAdder V4 Pro (Wireless)",
   vendorId: 0x1532,
   productId: 0x00BF,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

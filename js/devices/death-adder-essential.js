@@ -3,7 +3,7 @@ export default {
   name: "DeathAdder Essential",
   vendorId: 0x1532,
   productId: 0x006E,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

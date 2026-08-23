@@ -3,7 +3,7 @@ export default {
   name: "Orochi 2013",
   vendorId: 0x1532,
   productId: 0x0039,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

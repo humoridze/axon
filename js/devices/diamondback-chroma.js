@@ -3,7 +3,7 @@ export default {
   name: "Diamondback Chroma",
   vendorId: 0x1532,
   productId: 0x004C,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

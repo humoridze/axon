@@ -3,7 +3,7 @@ export default {
   name: "Naga V2 HyperSpeed (Receiver)",
   vendorId: 0x1532,
   productId: 0x00B4,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

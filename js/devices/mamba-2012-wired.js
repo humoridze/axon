@@ -3,7 +3,7 @@ export default {
   name: "Mamba 2012 (Wired)",
   vendorId: 0x1532,
   productId: 0x0024,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

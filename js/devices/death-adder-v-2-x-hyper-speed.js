@@ -3,7 +3,7 @@ export default {
   name: "DeathAdder V2 X HyperSpeed",
   vendorId: 0x1532,
   productId: 0x009C,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

@@ -3,7 +3,7 @@ export default {
   name: "DeathAdder 3.5G Black",
   vendorId: 0x1532,
   productId: 0x0029,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

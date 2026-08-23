@@ -3,7 +3,7 @@ export default {
   name: "Naga Left Handed Edition 2020",
   vendorId: 0x1532,
   productId: 0x008D,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

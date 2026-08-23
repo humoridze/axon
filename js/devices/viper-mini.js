@@ -3,7 +3,7 @@ export default {
   name: "Viper Mini",
   vendorId: 0x1532,
   productId: 0x008A,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

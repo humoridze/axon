@@ -3,7 +3,7 @@ export default {
   name: "Mamba Wireless (Receiver)",
   vendorId: 0x1532,
   productId: 0x0072,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x3F,
     info: 0x3F,

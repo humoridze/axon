@@ -3,7 +3,7 @@ export default {
   name: "Basilisk V3 Pro 35K Phantom Green Edition (Wireless)",
   vendorId: 0x1532,
   productId: 0x00D7,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

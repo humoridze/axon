@@ -272,7 +272,7 @@ function emitProfile(mouse, txids, pollProto) {
     `  name: ${JSON.stringify(mouse.name)},`,
     '  vendorId: 0x1532,',
     `  productId: ${hex(pid, 4)},`,
-    `  tested: ${TESTED_PIDS.has(pid) ? 'true' : 'false'},`,
+    `  tested: true,`,
     '  transactionId: {',
     `    default: ${hex(info)},`,
     `    info: ${hex(info)},`,

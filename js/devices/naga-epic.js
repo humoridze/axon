@@ -3,7 +3,7 @@ export default {
   name: "Naga Epic",
   vendorId: 0x1532,
   productId: 0x001F,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

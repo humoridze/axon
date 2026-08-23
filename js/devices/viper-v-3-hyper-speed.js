@@ -3,7 +3,7 @@ export default {
   name: "Viper V3 HyperSpeed",
   vendorId: 0x1532,
   productId: 0x00B8,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

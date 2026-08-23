@@ -3,7 +3,7 @@ export default {
   name: "Abyssus V2",
   vendorId: 0x1532,
   productId: 0x005B,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

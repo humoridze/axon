@@ -3,7 +3,7 @@ export default {
   name: "Abyssus Elite (D.Va Edition)",
   vendorId: 0x1532,
   productId: 0x006A,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

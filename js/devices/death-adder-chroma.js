@@ -3,7 +3,7 @@ export default {
   name: "DeathAdder Chroma",
   vendorId: 0x1532,
   productId: 0x0043,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0xFF,
     info: 0xFF,

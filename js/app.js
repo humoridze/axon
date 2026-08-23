@@ -111,8 +111,12 @@ function renderCatalog() {
   }
   document.getElementById('tested-list').innerHTML = tested.map(catalogItem).join('');
   document.getElementById('untested-list').innerHTML = untested.map(catalogItem).join('');
-  const summary = document.getElementById('untested-summary');
-  if (summary) summary.textContent = t('untestedSummary', { n: untested.length });
+  const testedSummary = document.getElementById('tested-summary');
+  if (testedSummary) testedSummary.textContent = t('testedSummary', { n: tested.length });
+  const untestedSummary = document.getElementById('untested-summary');
+  if (untestedSummary) untestedSummary.textContent = t('untestedSummary', { n: untested.length });
+  const untestedBlock = document.getElementById('untested-block');
+  if (untestedBlock) untestedBlock.hidden = untested.length === 0;
 }
 
 function batteryText() {

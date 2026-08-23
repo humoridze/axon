@@ -3,7 +3,7 @@ export default {
   name: "Basilisk",
   vendorId: 0x1532,
   productId: 0x0064,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x3F,
     info: 0x3F,

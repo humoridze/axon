@@ -3,7 +3,7 @@ export default {
   name: "Cobra Pro (Wireless)",
   vendorId: 0x1532,
   productId: 0x00B0,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

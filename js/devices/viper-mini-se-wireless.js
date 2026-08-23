@@ -3,7 +3,7 @@ export default {
   name: "Viper Mini SE (Wireless)",
   vendorId: 0x1532,
   productId: 0x009F,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

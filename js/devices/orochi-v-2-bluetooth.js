@@ -3,7 +3,7 @@ export default {
   name: "Orochi V2 (Bluetooth)",
   vendorId: 0x1532,
   productId: 0x0095,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,

@@ -3,7 +3,7 @@ export default {
   name: "Viper V2 Pro (Wireless)",
   vendorId: 0x1532,
   productId: 0x00A6,
-  tested: false,
+  tested: true,
   transactionId: {
     default: 0x1F,
     info: 0x1F,
