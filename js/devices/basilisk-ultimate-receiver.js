@@ -1,6 +1,6 @@
 export default {
   id: "basilisk-ultimate-receiver",
-  name: "BasiliskUltimateReceiver",
+  name: "Basilisk Ultimate (Receiver)",
   vendorId: 0x1532,
   productId: 0x0088,
   tested: true,

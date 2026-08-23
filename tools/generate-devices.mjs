@@ -1,19 +1,14 @@
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEVICES = join(ROOT, 'js', 'devices');
-const TESTED = [
-  { pid: 0x0098, slug: 'deathadder-essential-2021', ident: 'deathadderEssential2021' },
-  { pid: 0x00AB, slug: 'basilisk-v3-pro-wireless', ident: 'basiliskV3ProWireless' },
-];
-const TESTED_PIDS = new Set(TESTED.map((item) => item.pid));
-const KEEP = new Set(TESTED.map((item) => `${item.slug}.js`));
+const OPENRAZER = join(ROOT, 'tools', 'openrazer');
 const MONO_GREEN = new Set([0x006E, 0x0071, 0x0098]);
-const MOUSE_PY = String.raw`C:\Users\humor\.cursor\projects\c-Users-humor-Documents-synapse\agent-tools\30fa8a8b-a063-4bb0-9951-bbe8a81d7222.txt`;
-const DRIVER_C = String.raw`C:\Users\humor\.cursor\projects\c-Users-humor-Documents-synapse\agent-tools\5d4e410a-b93d-49eb-8e03-382fc5c1b029.txt`;
-const DRIVER_H = join(dirname(fileURLToPath(import.meta.url)), 'razermouse_driver.h');
+const MOUSE_PY = join(OPENRAZER, 'mouse.py');
+const DRIVER_C = join(OPENRAZER, 'razermouse_driver.c');
+const DRIVER_H = join(ROOT, 'tools', 'razermouse_driver.h');
 
 const ZONES = [
   ['logo', 0x04, 'Логотип', 'logo'],
@@ -22,6 +17,14 @@ const ZONES = [
   ['right', 0x10, 'Правый бок', 'right'],
   ['backlight', 0x00, 'Корпус', 'matrix'],
 ];
+
+function titleFromClass(className) {
+  let name = className.startsWith('Razer') ? className.slice(5) : className;
+  name = name.replaceAll('_', ' ');
+  name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+  name = name.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+  return name.replace(/\s+/g, ' ').trim();
+}
 
 function slugFromClass(className) {
   let name = className.startsWith('Razer') ? className.slice(5) : className;
@@ -140,7 +143,7 @@ function parseClasses(text) {
     const className = header[1];
     const bases = header[2].split(',').map((item) => item.trim());
     const doc = chunk.match(/Class for the Razer (.+)/);
-    const name = doc ? doc[1].trim() : className.replace(/^Razer/, '');
+    const name = doc ? doc[1].trim() : titleFromClass(className);
     const pidMatch = chunk.match(/USB_PID\s*=\s*(0x[0-9A-Fa-f]+)/);
     const dpiMatch = chunk.match(/DPI_MAX\s*=\s*(\d+)/);
     const pollMatch = chunk.match(/POLL_RATES\s*=\s*\[([^\]]+)\]/);
@@ -340,9 +343,7 @@ function emitProfile(mouse, txids, pollProto) {
 }
 
 function emitRegistry(entries) {
-  const tested = entries.filter((item) => TESTED_PIDS.has(item.pid));
-  const rest = entries.filter((item) => !TESTED_PIDS.has(item.pid)).sort((a, b) => a.slug.localeCompare(b.slug));
-  const ordered = [...tested, ...rest];
+  const ordered = [...entries].sort((a, b) => a.slug.localeCompare(b.slug));
   const lines = [];
   for (const item of ordered) lines.push(`import ${item.ident} from './${item.slug}.js';`);
   lines.push('', 'const catalog = [');
@@ -353,10 +354,6 @@ export const RAZER_VENDOR_ID = 0x1532;
 
 export function listDevices() {
   return catalog;
-}
-
-export function listTestedDevices() {
-  return catalog.filter((device) => device.tested);
 }
 
 export function getDevice(productId) {
@@ -377,6 +374,12 @@ export function hidDeviceFilters() {
   return lines.join('\n');
 }
 
+for (const source of [MOUSE_PY, DRIVER_C, DRIVER_H]) {
+  if (!existsSync(source)) {
+    throw new Error(`Put OpenRazer sources in tools/openrazer (missing ${source})`);
+  }
+}
+
 const ids = parseUsbIds(readFileSync(DRIVER_H, 'utf8'));
 const driver = readFileSync(DRIVER_C, 'utf8').replaceAll('\r\n', '\n').replaceAll('\r', '\n');
 const mice = parseClasses(readFileSync(MOUSE_PY, 'utf8'));
@@ -392,21 +395,16 @@ const pollProto = parsePollProtocol(extractFunction(driver, 'razer_attr_read_pol
 mkdirSync(DEVICES, { recursive: true });
 for (const filename of readdirSync(DEVICES)) {
   if (!filename.endsWith('.js')) continue;
-  if (filename === 'registry.js' || KEEP.has(filename)) continue;
+  if (filename === 'registry.js') continue;
   unlinkSync(join(DEVICES, filename));
 }
 const entries = [];
 const seenSlugs = new Map();
 let written = 0;
 for (const mouse of mice) {
-  const tested = TESTED.find((item) => item.pid === mouse.pid);
-  if (tested) {
-    entries.push({ slug: tested.slug, ident: tested.ident, pid: mouse.pid });
-    continue;
-  }
   const { source, slug } = emitProfile(mouse, txids, pollProto);
   let uniqueSlug = slug;
-  if (seenSlugs.has(uniqueSlug) || KEEP.has(`${uniqueSlug}.js`)) {
+  if (seenSlugs.has(uniqueSlug)) {
     uniqueSlug = `${slug}-${hex(mouse.pid, 4).slice(2).toLowerCase()}`;
   }
   seenSlugs.set(uniqueSlug, mouse.pid);
@@ -416,4 +414,4 @@ for (const mouse of mice) {
 }
 
 writeFileSync(join(DEVICES, 'registry.js'), emitRegistry(entries), 'utf8');
-console.log(`mice=${entries.length} written=${written} kept=${KEEP.size}`);
+console.log(`mice=${entries.length} written=${written}`);

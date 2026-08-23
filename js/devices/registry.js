@@ -236,10 +236,6 @@ export function listDevices() {
   return catalog;
 }
 
-export function listTestedDevices() {
-  return catalog.filter((device) => device.tested);
-}
-
 export function getDevice(productId) {
   return byProductId.get(productId) ?? null;
 }

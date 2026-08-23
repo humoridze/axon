@@ -185,20 +185,9 @@ main {
   gap: 28px;
 }
 
-.catalog details + details {
-  margin-top: 16px;
-}
-
 .catalog details summary {
   cursor: pointer;
   margin-bottom: 8px;
-}
-
-.untested-note {
-  margin: 16px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
 }
 
 .workspace {

@@ -23,7 +23,6 @@ const ui = {
   serial: document.getElementById('device-serial'),
   batteryRow: document.getElementById('battery-row'),
   battery: document.getElementById('device-battery'),
-  untestedNote: document.getElementById('untested-note'),
 };
 
 let session = null;
@@ -104,19 +103,10 @@ function catalogItem(device) {
 }
 
 function renderCatalog() {
-  const tested = [];
-  const untested = [];
-  for (const device of listDevices()) {
-    (device.tested ? tested : untested).push(device);
-  }
-  document.getElementById('tested-list').innerHTML = tested.map(catalogItem).join('');
-  document.getElementById('untested-list').innerHTML = untested.map(catalogItem).join('');
-  const testedSummary = document.getElementById('tested-summary');
-  if (testedSummary) testedSummary.textContent = t('testedSummary', { n: tested.length });
-  const untestedSummary = document.getElementById('untested-summary');
-  if (untestedSummary) untestedSummary.textContent = t('untestedSummary', { n: untested.length });
-  const untestedBlock = document.getElementById('untested-block');
-  if (untestedBlock) untestedBlock.hidden = untested.length === 0;
+  const devices = listDevices();
+  document.getElementById('catalog-list').innerHTML = devices.map(catalogItem).join('');
+  const summary = document.getElementById('catalog-summary');
+  if (summary) summary.textContent = t('catalogSummary', { n: devices.length });
 }
 
 function batteryText() {
@@ -363,7 +353,6 @@ async function connect() {
   ui.name.textContent = profile.name;
   ui.pid.textContent = pidLabel(profile.productId);
   ui.firmware.textContent = firmware;
-  ui.untestedNote.hidden = Boolean(profile.tested);
   try {
     ui.serial.textContent = await session.getSerial();
   } catch {
@@ -426,7 +415,6 @@ async function disconnect(fromEvent = false) {
   gate.hidden = false;
   ui.batteryRow.hidden = true;
   ui.battery.textContent = '—';
-  ui.untestedNote.hidden = true;
   connectBtn.classList.add('btn-primary');
   connectBtn.classList.remove('btn-ghost');
   syncConnectButton();
