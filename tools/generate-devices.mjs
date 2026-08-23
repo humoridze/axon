@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -374,6 +374,38 @@ export function hidDeviceFilters() {
   return lines.join('\n');
 }
 
+function profileFiles() {
+  return readdirSync(DEVICES).filter((name) => name.endsWith('.js') && name !== 'registry.js');
+}
+
+function readProfile(filename) {
+  const text = readFileSync(join(DEVICES, filename), 'utf8');
+  const name = text.match(/name:\s*['"]([^'"]+)['"]/);
+  const pid = text.match(/productId:\s*(0x[0-9A-Fa-f]+)/);
+  const slug = filename.slice(0, -3);
+  return {
+    slug,
+    ident: identFromSlug(slug),
+    pid: pid ? Number.parseInt(pid[1], 16) : null,
+    name: name ? name[1] : slug,
+  };
+}
+
+function emitReadme(rows) {
+  const sorted = [...rows].sort((left, right) => left.name.localeCompare(right.name) || left.pid - right.pid);
+  const table = ['| Mouse | VID:PID |', '| --- | --- |'];
+  for (const row of sorted) {
+    const pid = row.pid.toString(16).toUpperCase().padStart(4, '0');
+    table.push(`| ${row.name} | \`1532:${pid}\` |`);
+  }
+  const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
+  const next = readme.replace(
+    /## Support\n\n\| Mouse \| VID:PID \|[\s\S]*?\n\n(?=## )/,
+    `## Support\n\n${table.join('\n')}\n\n`,
+  );
+  writeFileSync(join(ROOT, 'README.md'), next, 'utf8');
+}
+
 for (const source of [MOUSE_PY, DRIVER_C, DRIVER_H]) {
   if (!existsSync(source)) {
     throw new Error(`Put OpenRazer sources in tools/openrazer (missing ${source})`);
@@ -393,25 +425,30 @@ const txids = {
 const pollProto = parsePollProtocol(extractFunction(driver, 'razer_attr_read_poll_rate'), ids);
 
 mkdirSync(DEVICES, { recursive: true });
-for (const filename of readdirSync(DEVICES)) {
-  if (!filename.endsWith('.js')) continue;
-  if (filename === 'registry.js') continue;
-  unlinkSync(join(DEVICES, filename));
+const byPid = new Map();
+const seenSlugs = new Set();
+for (const filename of profileFiles()) {
+  const profile = readProfile(filename);
+  if (profile.pid == null) continue;
+  byPid.set(profile.pid, profile);
+  seenSlugs.add(profile.slug);
 }
-const entries = [];
-const seenSlugs = new Map();
+
 let written = 0;
 for (const mouse of mice) {
+  if (byPid.has(mouse.pid)) continue;
   const { source, slug } = emitProfile(mouse, txids, pollProto);
   let uniqueSlug = slug;
   if (seenSlugs.has(uniqueSlug)) {
     uniqueSlug = `${slug}-${hex(mouse.pid, 4).slice(2).toLowerCase()}`;
   }
-  seenSlugs.set(uniqueSlug, mouse.pid);
-  entries.push({ slug: uniqueSlug, ident: identFromSlug(uniqueSlug), pid: mouse.pid });
+  seenSlugs.add(uniqueSlug);
   writeFileSync(join(DEVICES, `${uniqueSlug}.js`), source, 'utf8');
+  byPid.set(mouse.pid, { slug: uniqueSlug, ident: identFromSlug(uniqueSlug), pid: mouse.pid, name: mouse.name });
   written += 1;
 }
 
+const entries = [...byPid.values()];
 writeFileSync(join(DEVICES, 'registry.js'), emitRegistry(entries), 'utf8');
+emitReadme(entries);
 console.log(`mice=${entries.length} written=${written}`);
